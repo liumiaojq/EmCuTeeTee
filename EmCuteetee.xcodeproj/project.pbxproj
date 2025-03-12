@@ -3,10 +3,12 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 52;
+	objectVersion = 54;
 	objects = {
 
 /* Begin PBXBuildFile section */
+		8FD27D492D8210D3007EB261 /* sample_client12.p12 in Resources */ = {isa = PBXBuildFile; fileRef = 8FD27D482D8210D3007EB261 /* sample_client12.p12 */; };
+		8FD27D4A2D8210D3007EB261 /* ca.der in Resources */ = {isa = PBXBuildFile; fileRef = 8FD27D472D8210D3007EB261 /* ca.der */; };
 		D10FB28726887313004DC992 /* EmCuTeeTeeApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D10FB28626887313004DC992 /* EmCuTeeTeeApp.swift */; };
 		D10FB28926887313004DC992 /* ServerDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D10FB28826887313004DC992 /* ServerDetailsView.swift */; };
 		D10FB28B26887314004DC992 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D10FB28A26887314004DC992 /* Assets.xcassets */; };
@@ -21,6 +23,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		8FD27D472D8210D3007EB261 /* ca.der */ = {isa = PBXFileReference; lastKnownFileType = file; path = ca.der; sourceTree = "<group>"; };
+		8FD27D482D8210D3007EB261 /* sample_client12.p12 */ = {isa = PBXFileReference; lastKnownFileType = file; path = sample_client12.p12; sourceTree = "<group>"; };
 		D10FB28326887313004DC992 /* EmCuteetee.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = EmCuteetee.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D10FB28626887313004DC992 /* EmCuTeeTeeApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmCuTeeTeeApp.swift; sourceTree = "<group>"; };
 		D10FB28826887313004DC992 /* ServerDetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerDetailsView.swift; sourceTree = "<group>"; };
@@ -66,6 +70,8 @@
 		D10FB28526887313004DC992 /* EmCuTeeTee */ = {
 			isa = PBXGroup;
 			children = (
+				8FD27D472D8210D3007EB261 /* ca.der */,
+				8FD27D482D8210D3007EB261 /* sample_client12.p12 */,
 				D10FB2AA268C6941004DC992 /* Views */,
 				D10FB28626887313004DC992 /* EmCuTeeTeeApp.swift */,
 				D10FB2A8268C5CEE004DC992 /* UserSettings.swift */,
@@ -162,6 +168,8 @@
 			files = (
 				D10FB28E26887314004DC992 /* Preview Assets.xcassets in Resources */,
 				D10FB28B26887314004DC992 /* Assets.xcassets in Resources */,
+				8FD27D492D8210D3007EB261 /* sample_client12.p12 in Resources */,
+				8FD27D4A2D8210D3007EB261 /* ca.der in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -309,7 +317,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_ASSET_PATHS = "\"Emcuteetee/Preview Content\"";
-				DEVELOPMENT_TEAM = QJ3Z32MXU8;
+				DEVELOPMENT_TEAM = UBF8T346G9;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = "$(SRCROOT)/EmCuteetee/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
@@ -331,7 +339,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_ASSET_PATHS = "\"Emcuteetee/Preview Content\"";
-				DEVELOPMENT_TEAM = QJ3Z32MXU8;
+				DEVELOPMENT_TEAM = UBF8T346G9;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = "$(SRCROOT)/EmCuteetee/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;

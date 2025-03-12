@@ -10,6 +10,7 @@ import MQTTNIO
 import NIO
 import NIOTransportServices
 import SwiftUI
+import NIOCore
 
 @MainActor
 struct ServerView: View {
@@ -178,57 +179,79 @@ struct ServerView: View {
 class MQTTClientConnection {
     static let eventLoopGroup = NIOTSEventLoopGroup()
     let view: ServerView
-    let client: MQTTClient
+    let client: MQTTClient?
     var shuttingDown: Bool
 
     init(view: ServerView) {
         let details = view.serverDetails
-        let config = MQTTClient.Configuration(
-            version: details.version,
-            useSSL: details.useTLS,
-            useWebSockets: details.useWebSocket,
-            webSocketURLPath: details.webSocketUrl
-        )
         var logger = Logger(label: "EmCuteetee")
         #if DEBUG
         logger.logLevel = .trace
         #else
         logger.logLevel = .critical
         #endif
-        self.client = .init(
-            host: details.hostname,
-            port: details.port,
-            identifier: details.identifier,
-            eventLoopGroupProvider: .shared(Self.eventLoopGroup),
-            logger: logger,
-            configuration: config
-        )
+        
         self.view = view
         self.shuttingDown = false
-
-        self.client.addPublishListener(named: "MQTTClient") { result in
-            switch result {
-            case .success(let value):
-                let string = String(buffer: value.payload)
-                Task {
-                    var output: String
-                    if string.count > ServerView.maxPayloadLength {
-                        output = string.prefix(ServerView.maxPayloadLength) + "..."
-                    } else {
-                        output = string
+        
+        do {
+            let trustRoortCertPath = Bundle.main.path(forResource: "ca", ofType: "der")
+            let clientCertPath = Bundle.main.path(forResource: "sample_client12", ofType: "p12")
+            let trustRootCert = try TSTLSConfiguration.Certificates.der(trustRoortCertPath!)
+            let status = try MQTTClientConnection.p12(filename: clientCertPath!, password: "1qaz!QAZ")
+            let errorDescription = SecCopyErrorMessageString(status, nil)
+            print("status \(status) \(String(describing: errorDescription))")
+            let clientIdentity = try TSTLSConfiguration.Identity.p12(filename: clientCertPath!, password: "1qaz!QAZ")
+            let tsConfig = TSTLSConfiguration.init(trustRoots: trustRootCert, clientIdentity: clientIdentity)
+            
+            self.client = .init(
+                host: details.hostname,
+                port: details.port,
+                identifier: details.identifier,
+                eventLoopGroupProvider: .shared(Self.eventLoopGroup),
+                logger: logger,
+                configuration: .init(useSSL: true, tlsConfiguration: .ts(tsConfig))
+            )
+            
+            self.client!.addPublishListener(named: "MQTTClient") { result in
+                switch result {
+                case .success(let value):
+                    let string = String(buffer: value.payload)
+                    Task {
+                        var output: String
+                        if await string.count > ServerView.maxPayloadLength {
+                            output = await string.prefix(ServerView.maxPayloadLength) + "..."
+                        } else {
+                            output = string
+                        }
+                        await view.addMessage("\(value.topicName):\n\(output)")
                     }
-                    await view.addMessage("\(value.topicName):\n\(output)")
+                case .failure:
+                    break
                 }
-            case .failure:
-                break
             }
+        } catch {
+            let msg = "Unexpected error: \(error)."
+            print(msg)
+            Task {
+                await view.addMessage(msg)
+            }
+            
+            self.client = nil
         }
+    }
+    
+    public static func p12(filename: String, password: String) throws -> OSStatus {
+        let data = try Data(contentsOf: URL(fileURLWithPath: filename))
+        let options: [String: String] = [kSecImportExportPassphrase as String: password]
+        var rawItems: CFArray?
+        return SecPKCS12Import(data as CFData, options as CFDictionary, &rawItems)
     }
 
     func connect() async {
         do {
-            _ = try await self.client.connect(cleanSession: view.serverDetails.cleanSession)
-            self.client.addCloseListener(named: "EmCuTeeTee") { result in
+            _ = try await self.client!.connect(cleanSession: view.serverDetails.cleanSession)
+            self.client!.addCloseListener(named: "EmCuTeeTee") { result in
                 guard !self.shuttingDown else { return }
                 Task {
                     await self.view.addMessage("Connection closed", now: true)
@@ -238,19 +261,20 @@ class MQTTClientConnection {
             }
             await self.view.addMessage("Connection successful", now: true)
         } catch {
+            print("Failed to connect\n\(error)")
             await self.view.addMessage("Failed to connect\n\(error)", now: true)
         }
     }
 
     func shutdown() async {
         self.shuttingDown = true
-        try? await self.client.disconnect()
-        try? await self.client.shutdown()
+        try? await self.client!.disconnect()
+        try? await self.client!.shutdown()
     }
 
     func publish(topic: String, payload: String, qos: Int, retain: Bool) async {
         do {
-            _ = try await self.client.publish(
+            _ = try await self.client!.publish(
                 to: topic,
                 payload: ByteBufferAllocator().buffer(string: payload),
                 qos: .init(rawValue: UInt8(qos))!,
@@ -264,7 +288,7 @@ class MQTTClientConnection {
 
     func subscribe(topic: String) async {
         do {
-            _ = try await self.client.subscribe(to: [MQTTSubscribeInfo(topicFilter: topic, qos: MQTTQoS.exactlyOnce)])
+            _ = try await self.client!.subscribe(to: [MQTTSubscribeInfo(topicFilter: topic, qos: MQTTQoS.exactlyOnce)])
             await self.view.addMessage("Subscribed to \(topic)", now: true)
         } catch {
             await self.view.addMessage("Failed to subscribe to \(topic)\nError: \(error)", now: true)
@@ -273,7 +297,7 @@ class MQTTClientConnection {
 
     func unsubscribe(topic: String) async {
         do {
-            _ = try await self.client.unsubscribe(from: [topic])
+            _ = try await self.client!.unsubscribe(from: [topic])
             await self.view.addMessage("Unsubscribed to \(topic)", now: true)
         } catch {
             await self.view.addMessage("Failed to unsubscribe from \(topic)\nError: \(error)", now: true)
