@@ -193,16 +193,15 @@ class MQTTClientConnection {
         
         self.view = view
         self.shuttingDown = false
-        // let rootCertificate = try NIOSSLCertificate.fromPEMBytes([UInt8](mosquittoCertificateText.utf8))
         
         do {
             let trustRoortCertPath = Bundle.main.path(forResource: "ca", ofType: "der")
-            let clientCertPath = Bundle.main.path(forResource: "sample_client8", ofType: "p12")
+            let clientCertPath = Bundle.main.path(forResource: "sample_client12", ofType: "p12")
             let trustRootCert = try TSTLSConfiguration.Certificates.der(trustRoortCertPath!)
-            let status = try MQTTClientConnection.p12(filename: clientCertPath!, password: "MQTTNIOClientCertPassword")
+            let status = try MQTTClientConnection.p12(filename: clientCertPath!, password: "1qaz!QAZ")
             let errorDescription = SecCopyErrorMessageString(status, nil)
             print("status \(status) \(String(describing: errorDescription))")
-            let clientIdentity = try TSTLSConfiguration.Identity.p12(filename: clientCertPath!, password: "MQTTNIOClientCertPassword")
+            let clientIdentity = try TSTLSConfiguration.Identity.p12(filename: clientCertPath!, password: "1qaz!QAZ")
             let tsConfig = TSTLSConfiguration.init(trustRoots: trustRootCert, clientIdentity: clientIdentity)
             
             self.client = .init(
@@ -262,6 +261,7 @@ class MQTTClientConnection {
             }
             await self.view.addMessage("Connection successful", now: true)
         } catch {
+            print("Failed to connect\n\(error)")
             await self.view.addMessage("Failed to connect\n\(error)", now: true)
         }
     }
